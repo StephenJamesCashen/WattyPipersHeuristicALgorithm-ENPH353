@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+
 class AugmentationUtils:
     """
     Image augmentation methods to get more plate images
     """
     def __init__(self, img):
         self.img = img
-    
+
     """
     Scales image
     Params: c_x - horizontal scaling factor (positive int)
