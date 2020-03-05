@@ -14,7 +14,7 @@ def main():
         print("Introduce yourself...")
 
         # Send say_text to robot
-        robot.behavior.say_text("Hi ahhana it is nice to meet you!")
+        robot.behavior.say_text("Hi Adam it is nice to meet you!")
 
 
 if __name__ == "__main__":
