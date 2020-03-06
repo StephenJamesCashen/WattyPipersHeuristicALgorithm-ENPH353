@@ -27,7 +27,7 @@ class AugmentationUtils:
            c_y - vertical scaling factor (positive int)
     Returns: scaled image
     """
-    def scale(self, c_x, c_y):
+    def scale(self, c_x, c_y):      
         return cv2.resize(self.img, (int(self.img.shape[1] * c_x),
                                      int(self.img.shape[0] * c_y)))
 
@@ -37,7 +37,6 @@ class AugmentationUtils:
     Returns: rotated image
     """
     def rotate(self, phi):
-        print("image type: {}".format(type(self.img)))
         return rotate(self.img, angle=phi)
 
     """
