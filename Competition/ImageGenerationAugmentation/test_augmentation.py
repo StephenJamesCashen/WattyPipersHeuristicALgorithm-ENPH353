@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import cv2
-import math
 from augmentation_utils import AugmentationUtils as au
 
 
@@ -73,7 +72,7 @@ def test_perspective_transform(util):
 def main():
     print("exterminate: being test")
     img = cv2.imread('dalek_test.jpeg')
-    aug_util = au(img, mutable=mutable)
+    aug_util = au(img)
     test_scale(aug_util)
     test_rotate(aug_util)
     test_blur(aug_util)

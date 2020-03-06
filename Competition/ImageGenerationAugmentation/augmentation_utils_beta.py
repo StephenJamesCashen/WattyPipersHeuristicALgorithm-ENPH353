@@ -185,23 +185,23 @@ def hsb(img, hue_on=False):
     Returns: HSB modified image
     """
     hsb = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    cv2.waitKey(2000)
 
     # randomly generate offsets. Randint used 3 times so that it clusters towards middle values
     h = 0
     if (hue_on):
         h = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
-        s = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
-        b = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
 
-        for i in range(hsb.shape[0]):
-            for j in range(hsb.shape[1]):
-                hsb[i][j][0] = new_hsb(hsb[i][j][0], h)
-                hsb[i][j][1] = new_hsb(hsb[i][j][1], s)
-                hsb[i][j][2] = new_hsb(hsb[i][j][2], b)
-        
-        # note that you get fun fun colours if you return img as hsv!
-        return cv2.cvtColor(hsb, cv2.COLOR_HSV2BGR)
+    s = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
+    b = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
+
+    for i in range(hsb.shape[0]):
+        for j in range(hsb.shape[1]):
+            hsb[i][j][0] = new_hsb(hsb[i][j][0], h)
+            hsb[i][j][1] = new_hsb(hsb[i][j][1], s)
+            hsb[i][j][2] = new_hsb(hsb[i][j][2], b)
+
+    # note that you get fun fun colours if you return img as hsv!
+    return cv2.cvtColor(hsb, cv2.COLOR_HSV2BGR)
 
 
 def shift(img, dx, dy):
