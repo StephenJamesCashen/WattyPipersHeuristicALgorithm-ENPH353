@@ -6,11 +6,10 @@ import random as rand
 from skimage.transform import rotate as scikit_rotate
 from skimage.transform import AffineTransform, warp
 from skimage.util import random_noise
-from random import seed, randint
 
 HSB_MAX = 255
 PERSPECTIVE_BORDER = 5
-seed(1)
+rand.seed()
 
 """
 Image augmentation methods to get more plate images
@@ -49,20 +48,20 @@ def generate_corners(img):
     width = img.shape[1]
     height = img.shape[0]
 
-    top_left = (randint(0, width // PERSPECTIVE_BORDER),
-                randint(0, height // PERSPECTIVE_BORDER))
+    top_left = (rand.randint(0, width // PERSPECTIVE_BORDER),
+                rand.randint(0, height // PERSPECTIVE_BORDER))
 
-    top_right = (randint((PERSPECTIVE_BORDER - 1)
+    top_right = (rand.randint((PERSPECTIVE_BORDER - 1)
                  * width // PERSPECTIVE_BORDER, width - 1),
-                 randint(0, height // PERSPECTIVE_BORDER))
+                 rand.randint(0, height // PERSPECTIVE_BORDER))
 
-    bottom_right = (randint((PERSPECTIVE_BORDER - 1)
+    bottom_right = (rand.randint((PERSPECTIVE_BORDER - 1)
                     * width // PERSPECTIVE_BORDER, width - 1),
-                    randint((PERSPECTIVE_BORDER - 1)
+                    rand.randint((PERSPECTIVE_BORDER - 1)
                     * height // PERSPECTIVE_BORDER, height - 1))
 
-    bottom_left = (randint(0, width // PERSPECTIVE_BORDER),
-                   randint((PERSPECTIVE_BORDER - 1)
+    bottom_left = (rand.randint(0, width // PERSPECTIVE_BORDER),
+                   rand.randint((PERSPECTIVE_BORDER - 1)
                    * height // PERSPECTIVE_BORDER, height - 1))
 
     rect = np.zeros((4, 2), dtype="float32")
@@ -165,7 +164,7 @@ def noise(img, param):
     Params: dunno yet
     Returns: noisier image
     """
-    return random_noise(img, mode=param, seed=randint(0, 100))
+    return random_noise(img, mode=param, seed=rand.randint(0, 100))
 
 
 def shift(img, dx, dy):
@@ -199,7 +198,7 @@ def rand_noise(img):
     Randomly picks from the nice modes
     """
     modes = ['gaussian', 'localvar', 'poisson', 'speckle']
-    return noise(img, modes[randint(0, 3)])
+    return noise(img, modes[rand.randint(0, 3)])
 
 
 def rand_blur(img):
@@ -227,7 +226,12 @@ def hsb(img, hue_on=False):
             saturation - fractional change of saturation
     Returns: HSB modified image
     """
+    # cv2.imshow("img", img)
+    # cv2.waitKey(5000)
+    img = img.astype('uint8')
     hsb = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    # cv2.imshow("hsb", hsb)
+    cv2.waitKey(1000)
 
     # randomly generate offsets. Randint used 3 times so that it clusters towards middle values
     h = 0
@@ -275,10 +279,10 @@ def randomise_augmentation(img):
     augs = get_augmentations()
 
     while (add_augmentation):
-        aug = augs[randint(0, len(augs) - 1)]
+        aug = augs[rand.randint(0, len(augs) - 1)]
         img = aug(img)
 
-        if (randint(0, 1) == 1):  # 50 / 50 chance
+        if (rand.randint(0, 1) == 1):  # 50 / 50 chance
             add_augmentation = False
     
     return img
