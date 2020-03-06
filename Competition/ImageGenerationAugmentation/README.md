@@ -8,14 +8,17 @@ List of modifications:
 * Perspective transform 
 * Shifts 
 
- 
+Goal: 
+
+The augmentations should be non-deterministic, but not too drastic (this justified the  use of `random.gaus` below: it makes modifications tend to the subtle)  
+
 Implementation: 
 
 0. Each function discussed below takes an image (ndarray) as input, and returns a modified image as output. 
 
 1. Wrote functions that deterministically modify images based on input parameters. This was done with cv2, scikit image, and online resources 
 
-2. Wrote functions which call on the deterministic functions in 1, using python's random.gauss(mean, std_dev) method in order to pick input parameters to the deterministic functions. These functions apply the modifications listed above. 
+2. Wrote functions which call on the deterministic functions in 1, using python's `random.gauss(mean, std_dev)` method in order to pick input parameters to the deterministic functions. These functions apply the modifications listed above. 
 
 3. Wrote a function which will, given an input image, will apply one randomly selected function from 2 to the image. Subsequently, it has a 50% chance of returning the image, and a 50% chance of applying another modification (and so on after each modification). 
 
