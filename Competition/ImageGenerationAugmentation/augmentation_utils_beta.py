@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import cv2
 import numpy as np
+import random as rand
 
 from skimage.transform import rotate as scikit_rotate
 from skimage.transform import AffineTransform, warp
@@ -8,7 +9,7 @@ from skimage.util import random_noise
 from random import seed, randint
 
 HSB_MAX = 255
-PERSPECTIVE_BORDER = 7
+PERSPECTIVE_BORDER = 5
 seed(1)
 
 """
@@ -109,7 +110,7 @@ def four_point_transform(img):
     # return the warped image
     return warped
 
-# ------------ API ------------------------------
+# ------------ API: deterministic modifications ------------------------------
 
 
 def scale(img, c_x, c_y):
@@ -167,12 +168,54 @@ def noise(img, param):
     return random_noise(img, mode=param, seed=randint(0, 100))
 
 
+def shift(img, dx, dy):
+    """
+    Shifts image
+    Params: dx - shift of the image in pixels in x
+            dy - shift of image in pixels in y
+                    < 0 if left
+                    > 0 if right
+    Returns: shifted image
+    """
+    transform = AffineTransform(translation=(dx, dy))
+    return warp(img, transform, mode='edge')
+
+# ------------ API: nondeterministic modifications ------------------------------
+
+
+def rand_scale(img):
+    cx = rand.gauss(1, 0.2)
+    cy = rand.gauss(1, 0.2)
+    return scale(img, cx, cy)
+
+
+def rand_rotate(img):
+    phi = rand.gauss(0, 10)
+    return rotate(img, phi)
+
+
 def rand_noise(img):
     """
     Randomly picks from the nice modes
     """
     modes = ['gaussian', 'localvar', 'poisson', 'speckle']
     return noise(img, modes[randint(0, 3)])
+
+
+def rand_blur(img):
+    kernel = 2 * int(rand.gauss(4, 1.5)) + 1
+    if (kernel < 1):
+        kernel = 1
+
+    return blur(img, kernel)
+
+
+def rand_motion_blur(img):
+    kernel = 2 * int(rand.gauss(4, 1.5)) + 1
+    if (kernel < 1):
+        kernel = 1
+
+    return motion_blur(img, kernel)
 
 
 def hsb(img, hue_on=False):
@@ -189,10 +232,10 @@ def hsb(img, hue_on=False):
     # randomly generate offsets. Randint used 3 times so that it clusters towards middle values
     h = 0
     if (hue_on):
-        h = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
+        h = int(rand.gauss(0, 40))
 
-    s = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
-    b = randint(-50, 50) + randint(-50, 50) + randint(-50, 50)
+    s = int(rand.gauss(0, 40))
+    b = int(rand.gauss(0, 40))
 
     for i in range(hsb.shape[0]):
         for j in range(hsb.shape[1]):
@@ -204,20 +247,38 @@ def hsb(img, hue_on=False):
     return cv2.cvtColor(hsb, cv2.COLOR_HSV2BGR)
 
 
-def shift(img, dx, dy):
-    """
-    Shifts image
-    Params: dx - shift of the image in pixels in x
-            dy - shift of image in pixels in y
-                    < 0 if left
-                    > 0 if right
-    Returns: shifted image
-    """
-    transform = AffineTransform(translation=(dx, dy))
-    return warp(img, transform)
+def rand_shift(img):
+    dx = rand.gauss(0, img.shape[1] // 10)
+    dy = rand.gauss(0, img.shape[0] // 10)
+
+    return shift(img, dx, dy)
 
 
 def perspective_transform(img):
     # 1. Get 4 points (nearish the edges, randomly generated)
     # 2. Order: top-left, top-right, bottom-right, bottom-left
     return four_point_transform(img)
+
+# -------------------- Available augmentations and random augmentation -------------------
+
+
+def get_augmentations():
+    return [rand_scale, rand_rotate, rand_noise, rand_blur, rand_motion_blur,
+            hsb, rand_shift, perspective_transform]
+
+
+def randomise_augmentation(img):
+    """
+    Goal is to have at least one augmentation, but have it unlikely to have all of them
+    """
+    add_augmentation = True
+    augs = get_augmentations()
+
+    while (add_augmentation):
+        aug = augs[randint(0, len(augs) - 1)]
+        img = aug(img)
+
+        if (randint(0, 1) == 1):  # 50 / 50 chance
+            add_augmentation = False
+    
+    return img

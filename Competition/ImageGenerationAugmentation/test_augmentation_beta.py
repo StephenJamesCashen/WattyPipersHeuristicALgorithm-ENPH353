@@ -69,17 +69,36 @@ def test_perspective_transform(img):
         cv2.waitKey(1000)
 
 
+def test_randomised_augmentations(img):
+    augmentations = util.get_augmentations()
+    for func in augmentations:
+        for i in range(5):
+            new_img = func(img)
+            cv2.imshow("randomised augmentation", new_img)
+            cv2.waitKey(500)
+
+
+def test_random_augmentation_selector(img):
+    for i in range(20):
+        new_img = util.randomise_augmentation(img)
+        cv2.imshow("random augmentation", new_img)
+        cv2.waitKey(500)
+
+
 def main():
     print("exterminate: being test")
-    img = cv2.imread('dalek_test.jpeg')
-    test_scale(img)
-    test_rotate(img)
-    test_blur(img)
-    test_motion_blur(img)
-    test_noise(img)
-    test_hsb(img)
-    test_shift(img)
-    test_perspective_transform(img)
+    # img = cv2.imread('dalek_test.jpeg')
+    img = cv2.imread('harley_quinn_test.jpeg')
+    # test_scale(img)
+    # test_rotate(img)
+    # test_blur(img)
+    # test_motion_blur(img)
+    # test_noise(img)
+    # test_hsb(img)
+    # test_shift(img)
+    # test_perspective_transform(img)
+    # test_randomised_augmentations(img)
+    test_random_augmentation_selector(img)
     print("Test complete: successful extermination")
 
 
