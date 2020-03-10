@@ -1,7 +1,8 @@
 from pynput.keyboard import Key, Listener
-import 
 import anki_vector as av
+import datetime
 import time
+from anki_vector.util import degrees
 
 left_wheel_speed = 0 
 right_wheel_speed = 0
@@ -28,10 +29,6 @@ def main():
         # Send say_text to robot
         robot.behavior.say_text("Connected!")
 
-        robot.behavior.drive_off_charger()
-
-
-
         def on_press(key):
             global left_flag, right_flag, for_flag, back_flag, shift_flag
             
@@ -51,9 +48,7 @@ def main():
 
             left_wheel_speed = speed * (for_flag + right_flag - left_flag - back_flag) * (1 + shift_flag) 
             right_wheel_speed = speed * (for_flag - right_flag + left_flag - back_flag) * (1 + shift_flag)
-            
-            print(left_wheel_speed)
-            print(right_wheel_speed)
+
             robot.motors.set_wheel_motors(left_wheel_speed, right_wheel_speed)
 
         def on_release(key):
@@ -76,27 +71,25 @@ def main():
 
             left_wheel_speed = speed*(for_flag+right_flag-left_flag-back_flag) * (1 + shift_flag)
             right_wheel_speed = speed*(for_flag-right_flag+left_flag-back_flag) * (1 + shift_flag)
-            
-            print(left_wheel_speed)
-            print(right_wheel_speed)
 
             robot.motors.set_wheel_motors(left_wheel_speed, right_wheel_speed)
-
-            print('{0} release'.format(key))
-
             if key == Key.esc:
                 # Stop listener
                 return False
 
         with Listener(on_press=on_press,
                     on_release=on_release) as listener:
-            while listener.running
-                robot.behavior.set_lift_height(1.0)
-                time.sleep(2)
-                robot.behavior.set_lift_height(0)
-                time.sleep(2)
-            listener.join()
-        
+            robot.camera.init_camera_feed()
+            
+            i = 0
+            while listener.running:
+                robot.behavior.set_head_angle(degrees(0))
+
+                image = robot.camera.latest_image
+                image.raw_image.save("Competition\\Image_Data\\image_" + str(int(time.time())) + ".png")
+
+                time.sleep(1)
+
         robot.behavior.say_text("Done!")
 
 if __name__ == "__main__":
