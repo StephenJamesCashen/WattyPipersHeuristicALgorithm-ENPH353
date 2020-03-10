@@ -2,7 +2,7 @@ import cv2
 import os
 
 
-class ImageSetGenerator:
+class PlateGeneratingUtils:
 
     def __init__(self, input_path='enph353_cnn_lab/letter_pictures/',
                  output_path='outputs/', img_width=300):
@@ -11,6 +11,7 @@ class ImageSetGenerator:
         self.output_dir = os.path.dirname(os.path.realpath(__file__)) + \
             "/" + output_path
         self.img_width = img_width
+        self.output_count = 0
 
     def files_in_folder(self):
         # adapted from Miti's code
@@ -22,8 +23,7 @@ class ImageSetGenerator:
         return img_list
 
     def get_letters(self, files):
-        plates = [cv2.imread("{}{}".format(self.input_dir, file),
-                  cv2.IMREAD_GRAYSCALE) for file in files]
+        plates = [cv2.imread("{}{}".format(self.input_dir, file)) for file in files]
         processed_plates = [self.process_image(plate) for plate in plates]
         letters = [None] * 4 * len(processed_plates)
         labels = self.get_labels(files)
@@ -43,7 +43,8 @@ class ImageSetGenerator:
             print("image is none help help help")
             return
         ratio = self.img_width / img.shape[1]
-        return cv2.resize(img, dsize=(self.img_width, int(img.shape[0] * ratio)),
+        return cv2.resize(img, dsize=(self.img_width,
+                          int(img.shape[0] * ratio)),
                           interpolation=cv2.INTER_CUBIC)
 
     def segment_plates(self, plate):
@@ -66,18 +67,26 @@ class ImageSetGenerator:
         return labels
 
     def save_plate_segment(self, plate, character):
-        cv2.imwrite("{} letter_{}.png".format(self.output_dir,
-                    character), plate)
+        cv2.imwrite("{} letter_{}_{}.png".format(self.output_dir,
+                    character, self.output_count), plate)
+        self.output_count += 1
 
     def generate_letter_set(self):
         letters = self.get_letters(self.files_in_folder())
         for letter in letters:
             self.save_plate_segment(letter[0], letter[1])
+    
+    """
+    Returns: letter 0, letter 1, number 0, number 1
+    """
+    def process_plate(self, plate):
+        small = self.process_image(plate)
+        return self.segment_plates(small)
 
 
 def main():
-    img_gen = ImageSetGenerator()
-    img_gen.generate_letter_set()
+    plate_utils = PlateGeneratingUtils()
+    plate_utils.generate_letter_set()
 
 
 if __name__ == "__main__":

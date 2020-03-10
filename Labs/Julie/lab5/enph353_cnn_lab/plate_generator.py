@@ -31,13 +31,15 @@ for i in range(0, NUMBER_OF_PLATES):
 
     # Get a drawing context
     draw = ImageDraw.Draw(blank_plate_pil)
-    monospace = ImageFont.truetype("/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf", 200)
-    draw.text((48, 50),plate_alpha + " " + plate_num, (255,0,0), font=monospace)
+    monospace = ImageFont.truetype("/usr/share/fonts/" +
+                                   "truetype/ubuntu/UbuntuMono-R.ttf", 200)
+    draw.text((48, 50), plate_alpha + " " + plate_num, (255, 0, 0),
+              font=monospace)
 
     # Convert back to OpenCV image and save
     blank_plate = np.array(blank_plate_pil)
 
     # Write license plate to file
-    cv2.imwrite(os.path.join(path + "pictures/", 
-                                "plate_{}{}.png".format(plate_alpha, plate_num)),
+    cv2.imwrite(os.path.join(path + "pictures/",
+                             "plate_{}{}.png".format(plate_alpha, plate_num)),
                 blank_plate)
