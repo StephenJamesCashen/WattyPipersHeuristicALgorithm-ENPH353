@@ -2,8 +2,9 @@ from pynput.keyboard import Key, Listener
 import anki_vector as av
 import datetime
 import time
+import numpy as np
 from anki_vector.util import degrees
-
+import cv2 as cv
 left_wheel_speed = 0 
 right_wheel_speed = 0
 
@@ -14,6 +15,19 @@ for_flag = 0
 shift_flag = False
 
 speed = 100
+
+def image_capture(robot, display_time, display_screen, display_comp, save):
+    image = robot.camera.capture_single_image()
+    if display_screen:
+        screen = image.raw_image.resize((184,96))
+        screen = av.screen.convert_image_to_screen_data(screen)
+        robot.screen.set_screen_with_image_data(screen, display_time, interrupt_running=False)
+    if display_comp:
+        img = np.array(image.raw_image.convert('RGB'))[:, :, ::-1].copy() 
+        cv.imshow("image", img)
+        cv.waitKey(100)
+    if save:
+        image.raw_image.save("Competition\\Image_Data\\image_" + str(int(time.time())) + ".png")
 
 def main():
     # Modify the SN to match your robot’s SN
@@ -27,8 +41,16 @@ def main():
                   behavior_control_level=ANKI_BEHAVIOR) as robot:
         print("Connected")
         # Send say_text to robot
-        robot.behavior.say_text("Connected!")
+        verbose = 0
+        capture_mode="periodic"
+        period = 0.5
+        display_comp = 1
+        display_screen = 0
+        save = 1
 
+        if verbose:
+            robot.behavior.say_text("Connected!")
+        
         def on_press(key):
             global left_flag, right_flag, for_flag, back_flag, shift_flag
             
@@ -44,8 +66,6 @@ def main():
             elif key == Key.right:
                 right_flag = 1
             
-
-
             left_wheel_speed = speed * (for_flag + right_flag - left_flag - back_flag) * (1 + shift_flag) 
             right_wheel_speed = speed * (for_flag - right_flag + left_flag - back_flag) * (1 + shift_flag)
 
@@ -66,8 +86,10 @@ def main():
             elif key == Key.right:
                 right_flag = 0
 
+            elif key == Key.space and capture_mode == "on_key":
+                image_capture(robot, 5, display_screen, display_comp, save)
             elif key == Key.shift or Key.shift_r:
-                shift_flag = not shift_flag
+                shift_flag = not shift_flag                     
 
             left_wheel_speed = speed*(for_flag+right_flag-left_flag-back_flag) * (1 + shift_flag)
             right_wheel_speed = speed*(for_flag-right_flag+left_flag-back_flag) * (1 + shift_flag)
@@ -78,19 +100,25 @@ def main():
                 return False
 
         with Listener(on_press=on_press,
-                    on_release=on_release) as listener:
-            robot.camera.init_camera_feed()
-            
+                    on_release=on_release) as listener:            
             i = 0
+
+
             while listener.running:
                 robot.behavior.set_head_angle(degrees(0))
+                robot.behavior.set_lift_height(1.0)
 
-                image = robot.camera.latest_image
-                image.raw_image.save("Competition\\Image_Data\\image_" + str(int(time.time())) + ".png")
+                if capture_mode == "periodic":
+                   image_capture(robot, period, display_screen, display_comp, save)
 
-                time.sleep(1)
+                time.sleep(period)
 
-        robot.behavior.say_text("Done!")
+        if verbose:
+            robot.behavior.say_text("Done!")
+        else:
+            print("done!")
+        while True:
+            time.sleep(10)
 
 if __name__ == "__main__":
 	main()
