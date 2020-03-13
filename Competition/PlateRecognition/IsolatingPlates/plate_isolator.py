@@ -24,9 +24,10 @@ class PlateIsolator:
         Sets up our sift recognition based off of our pattern
         """
         self.MAX_IMG_WIDTH = 500
+        self.THRESHOLD = 100
+        self.BLURRING_KERNEL = 5
 
-        self.feature_img = cv2.cvtColor(feature_img, cv2.COLOR_BGR2GRAY)
-        self.rescale_feature_img()
+        self.feature_img = self.preprocess_img(feature_img)
 
         self.sift = cv2.xfeatures2d.SIFT_create()  # makes SIFT object
 
@@ -39,7 +40,6 @@ class PlateIsolator:
         self.search_params = dict()
         self.flann = cv2.FlannBasedMatcher(self.index_params,
                                            self.search_params)
-
 
     def show_ref(self, duration_ms=5000):
         """
@@ -61,18 +61,30 @@ class PlateIsolator:
         cv2.imshow("Features image with keypoints", img)
         cv2.waitKey(duration_ms)
 
-    def rescale_feature_img(self):
-        width = self.feature_img.shape[1]
-        height = self.feature_img.shape[0]
+    def rescale_img(self, img):
+        width = img.shape[1]
+        height = img.shape[0]
         if (width > self.MAX_IMG_WIDTH):
             scale_factor = self.MAX_IMG_WIDTH / width
             dim = (self.MAX_IMG_WIDTH, int(height * scale_factor))
-            self.feature_img = cv2.resize(self.feature_img, dim)
+            return cv2.resize(img, dim)
+        return img
+    
+    def preprocess_img(self, img):
+        img = self.rescale_img(img)
+        kernel = (self.BLURRING_KERNEL, self.BLURRING_KERNEL)
+        img = cv2.GaussianBlur(img, kernel, 0)
+        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    def detectFeature(self, frame, greyframe):
+    def detectFeature(self, ref_img, greyframe):
         """
         Method: courtesy of homeography lab
         """
+        # greyframe = self.binarise_img(greyframe)
+        # cv2.imshow("binarised", greyframe)
+        greyframe = self.preprocess_img(greyframe)
+
+        cv2.waitKey(2000)
         kp_grayframe, desc_grayframe = self.sift.detectAndCompute(greyframe,
                                                                   None)
         matches = self.flann.knnMatch(self.descriptor, desc_grayframe, k=2)
@@ -95,6 +107,7 @@ class PlateIsolator:
                                           5.0)
 
         if matrix is None:
+            print("no points found")
             return None
 
         # matches_mask = mask.ravel().tolist()
@@ -107,7 +120,7 @@ class PlateIsolator:
         dst = cv2.perspectiveTransform(pts, matrix)
 
         # display result to screen
-        homography = cv2.polylines(frame, [np.int32(dst)], True,
+        homography = cv2.polylines(ref_img, [np.int32(dst)], True,
                                    (255, 0, 0), 3)
         cv2.imshow("Homography", homography)
         cv2.waitKey(5000)
