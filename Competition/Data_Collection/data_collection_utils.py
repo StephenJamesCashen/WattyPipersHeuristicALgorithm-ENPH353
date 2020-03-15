@@ -3,8 +3,8 @@ import cv2
 
 
 def undistort(img, path="Competition\\Data_Collection\\Camera_Calibration"):
-    mtx = np.read(path + "\\mtx.npy")
-    dist = np.read(path + "\\dist.npy")
+    mtx = np.load(path + "\\mtx.npy")
+    dist = np.load(path + "\\dist.npy")
 
     h, w = img.shape[:2]
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(
