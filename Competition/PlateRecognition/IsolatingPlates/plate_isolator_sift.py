@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 
-class PlateIsolator:
+class PlateIsolatorSIFT:
     """
     The goal of this module is to pick out parking and license plates
 
@@ -23,11 +23,10 @@ class PlateIsolator:
         """
         Sets up our sift recognition based off of our pattern
         """
-        self.MAX_IMG_WIDTH = 500
-        self.THRESHOLD = 100
-        self.BLURRING_KERNEL = 5
+        self.MAX_IMG_WIDTH = 200
 
-        self.feature_img = self.preprocess_img(feature_img)
+        self.feature_img = self.rescale_img(feature_img)
+        self.feature_img = self.preprocess_img(self.feature_img, 5, undistort=False)
 
         self.sift = cv2.xfeatures2d.SIFT_create()  # makes SIFT object
 
@@ -69,22 +68,27 @@ class PlateIsolator:
             dim = (self.MAX_IMG_WIDTH, int(height * scale_factor))
             return cv2.resize(img, dim)
         return img
-    
-    def preprocess_img(self, img):
-        img = self.rescale_img(img)
-        kernel = (self.BLURRING_KERNEL, self.BLURRING_KERNEL)
+
+    def preprocess_img(self, img, kernel_size=5, undistort=True):
+        # img = self.rescale_img(img)
+        kernel = (kernel_size, kernel_size)
         img = cv2.GaussianBlur(img, kernel, 0)
+        if (undistort):
+            img = self.undistort(img)
+
         return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    def detectFeature(self, ref_img, greyframe):
+    def detectFeature(self, ref_img, greyframe, duration=1000):
         """
         Method: courtesy of homeography lab
         """
         # greyframe = self.binarise_img(greyframe)
         # cv2.imshow("binarised", greyframe)
-        greyframe = self.preprocess_img(greyframe)
+        greyframe = self.preprocess_img(greyframe, 3,
+                                        undistort=False)
+        cv2.imshow("processed", greyframe)
+        cv2.waitKey(duration)
 
-        cv2.waitKey(2000)
         kp_grayframe, desc_grayframe = self.sift.detectAndCompute(greyframe,
                                                                   None)
         matches = self.flann.knnMatch(self.descriptor, desc_grayframe, k=2)
@@ -101,13 +105,17 @@ class PlateIsolator:
                                 good_points]).reshape(-1, 1, 2)
 
         if len(query_pts) == 0 or len(train_pts) == 0:
+            print("no query or training points")
             return None
 
         matrix, mask = cv2.findHomography(query_pts, train_pts, cv2.RANSAC,
                                           5.0)
 
+        print(query_pts)
+        print(train_pts)
+
         if matrix is None:
-            print("no points found")
+            print("no homeography matrix")
             return None
 
         # matches_mask = mask.ravel().tolist()
@@ -123,7 +131,22 @@ class PlateIsolator:
         homography = cv2.polylines(ref_img, [np.int32(dst)], True,
                                    (255, 0, 0), 3)
         cv2.imshow("Homography", homography)
-        cv2.waitKey(5000)
+        cv2.waitKey(duration)
 
         return np.int32(dst)
 
+    def undistort(self, img):
+        mtx = np.load("mtx.npy")
+        dist = np.load("dist.npy")
+
+        h, w = img.shape[:2]
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(
+            mtx, dist, (w, h), 1, (w, h))
+
+        # undistort
+        dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
+
+        # crop the image
+        x, y, w, h = roi
+        dst = dst[y:y+h, x:x+w]
+        return dst
