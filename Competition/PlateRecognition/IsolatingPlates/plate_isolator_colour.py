@@ -23,9 +23,9 @@ class PlateIsolatorColour:
         # in order HSB, green, blue, yellow
         if colour_bounds is None:
             self.colour_bounds = [
-                ([50, 20, 20], [80, 240, 240]),
-                ([90, 20, 20], [130, 240, 240]),
-                ([0, 20, 20], [60, 255, 255])
+                ([50, 0, 0], [80, 240, 240]),
+                ([90, 0, 0], [130, 240, 240]),
+                ([0, 0, 0], [60, 255, 255])
             ]
         else:
             self.colour_bounds = colour_bounds
@@ -51,6 +51,7 @@ class PlateIsolatorColour:
             bound_num += 1
 
             mask = cv2.inRange(hsb, lower, upper)
+            print(mask)
             output = cv2.bitwise_and(img, img, mask=mask)
             cv2.imshow(title, np.hstack([img, output]))
             cv2.waitKey(duration)
