@@ -1,11 +1,11 @@
 import numpy as np
 import cv2
+import Competition.global_variables as gv
 
-
-def undistort(img, path="Competition\\Data_Collection\\Camera_Calibration"):
-    mtx = np.load(path + "\\mtx.npy")
-    dist = np.load(path + "\\dist.npy")
-
+def undistort(img):
+    
+    mtx = np.load(gv.path + "\\Data_Collection\\mtx.npy")
+    dist = np.load(gv.path + "\\Data_Collection\\dist.npy")
     h, w = img.shape[:2]
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(
         mtx, dist, (w, h), 1, (w, h))

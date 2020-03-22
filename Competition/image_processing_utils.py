@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import Competition.global_variables as gv
 
 def get_hough_lines(img, threshold=125, probabilistic=False, min_line_length=100, max_line_gap=10,
                     verbose=False, ) -> np.ndarray:
@@ -19,9 +19,12 @@ def get_hough_lines(img, threshold=125, probabilistic=False, min_line_length=100
 
     @todo Correct line rendering for larger images
     """
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    else:
+        edges = cv2.Canny(img, 50, 150, apertureSize=3)
 
     if probabilistic:
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180,
@@ -52,13 +55,13 @@ def draw_lines(img, lines, probabilistic=False):
 
                 cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-def perspective_transform(img, paramaters = (None)):
-    """
-    @todo Build the homography following the information on wikipedia and a "phantom" top down camera.
-          Tune the parameters as appropriate.
 
-    @param img:
-    @param paramaters:
-    @return:
+def transform_to_top_down(img):
     """
-    pass
+    @param img:
+    @return: transformed image
+    """
+    homography = np.load(gv.path + "\\Image_Processing\\Perspective_Transform\\homography.npy")
+    shape = np.load(gv.path + "\\Image_Processing\\Perspective_Transform\\shape.npy")
+    img = cv2.warpPerspective(img, homography, (shape[1], shape[0]))
+    return img
