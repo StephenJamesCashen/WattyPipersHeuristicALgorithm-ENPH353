@@ -1,22 +1,23 @@
 import cv2
 import numpy as np
-import Competition.data_collection_utils as dcu
+
 params_1 = cv2.SimpleBlobDetector_Params()
 params_1.filterByArea = True
 params_1.filterByCircularity = False
-params_1.filterByConvexity = True
+params_1.filterByConvexity = False
 params_1.filterByInertia = False
 params_1.filterByColor = False
 
-params_1.minArea = 7
-params_1.maxArea = 1000
+params_1.minArea = 0
+params_1.maxArea = 10000
 
-params_1.minThreshold = 125
+params_1.minThreshold = 120
 params_1.maxThreshold = 255
-params_1.minConvexity = 0.9
+
+params_1.minConvexity = 0
 params_1.maxConvexity = 1
 
-params_1.minRepeatability = 4
+params_1.minRepeatability = 1
 
 params_1.minDistBetweenBlobs = 1
 
@@ -55,20 +56,22 @@ im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]),
 
 cv2.imwrite("blobs1.jpg", im_with_keypoints)
 
-img = cv2.imread("image_1.png")
-img = dcu.undistort(img)
+img = cv2.imread("sim-calibration.png")
 print(img.shape)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-keypoints = detector1.detect(gray)
+ret, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
+# cv2.imshow("thresh", thresh)
+# cv2.waitKey(0)
+keypoints = detector1.detect(thresh)
 
 centers = np.array([[kp.pt] for kp in keypoints], dtype=np.float32)
+
+print(centers.shape)
 
 im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]),
                                       (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-cv2.drawChessboardCorners(img, (4,11), centers, True)
-
+cv2.drawChessboardCorners(img, (4, 11), centers, True)
+cv2.imshow("img", img)
+cv2.waitKey(0)
 cv2.imwrite("blobs2.jpg", im_with_keypoints)
-
-
