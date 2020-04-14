@@ -29,7 +29,7 @@ params_ref.filterByConvexity = True
 params_ref.filterByInertia = False
 params_ref.filterByColor = False
 
-params_ref.minArea = 50
+params_ref.minArea = 10
 params_ref.maxArea = 50000
 
 params_ref.minThreshold = 150

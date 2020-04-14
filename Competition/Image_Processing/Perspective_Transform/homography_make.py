@@ -29,15 +29,15 @@ def main(argv):
 
     cv.namedWindow(window_name, cv.WINDOW_AUTOSIZE)
 
-    top = int(0.35 * src.shape[0])  # shape[0] = rows
-    bottom = 0
-    left = int(0.2 * src.shape[1])  # shape[1] = cols
+    top = int(0.5 * src.shape[0])  # shape[0] = rows
+    bottom = 30
+    left = int(0.35 * src.shape[1])  # shape[1] = cols
     right = left
     value = [255, 255, 255]
 
     dst = cv.copyMakeBorder(src, top, bottom, left, right, borderType, None, value)
 
-    scale_percent = 60  # percent of original size
+    scale_percent = 30  # percent of original size
     width = int(dst.shape[1] * scale_percent / 100)
     height = int(dst.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -49,7 +49,7 @@ def main(argv):
     cv.imwrite("new_ref.jpg", resized)
 
     cv.imshow("Resized image", resized)
-    cv.waitKey(1000)
+    cv.waitKey(0)
 
 
 if __name__ == "__main__":

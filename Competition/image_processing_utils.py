@@ -144,7 +144,7 @@ def transform_to_top_down(img, sim=True, shape=None):
     @return: transformed image
     """
     if sim:
-        homography = np.load(gv.path + "/Image_Processing/Perspective_Transform/homography-sim.npy")
+        homography = np.load(gv.path + "/Image_Processing/Perspective_Transform/homography-sim_v0.npy")
         if shape is None:
             shape = np.load(gv.path + "/Image_Processing/Perspective_Transform/shape-sim.npy")
     else:
